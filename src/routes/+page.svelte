@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     DEMO_ACCOUNT_INPUT,
-    DEMO_API_KEY,
     type ShapeAccount,
   } from "$lib/account";
   import { onMount } from "svelte";
@@ -9,7 +8,7 @@
   type StatusTone = "idle" | "working" | "success" | "error";
 
   let accountReference = $state(DEMO_ACCOUNT_INPUT);
-  let apiKey = $state(DEMO_API_KEY);
+  let migrationKey = $state("");
   let account = $state<ShapeAccount | null>(null);
   let connectedAddress = $state("");
   let statusTone = $state<StatusTone>("idle");
@@ -55,7 +54,7 @@
         method: "POST",
         headers: {
           "content-type": "application/json",
-          authorization: `Bearer ${apiKey}`,
+          authorization: `Bearer ${migrationKey}`,
         },
         body: JSON.stringify({ accountCode: accountReference }),
       });
@@ -101,8 +100,8 @@
     <div>
       <h1 id="page-title">Migrate a Shape account</h1>
       <p>
-        Log in, provide the Shape account code and API key, then migrate the
-        account into your TinyCloud space.
+        Log in, provide the Shape account code and migration key, then migrate
+        the account into your TinyCloud space.
       </p>
     </div>
     <div class="destination">
@@ -160,12 +159,12 @@
             containing a code also work.
           </p>
 
-          <label for="api-key">9-digit API key</label>
+          <label for="migration-key">9-digit migration key</label>
           <input
-            id="api-key"
-            name="api-key"
+            id="migration-key"
+            name="migration-key"
             type="password"
-            bind:value={apiKey}
+            bind:value={migrationKey}
             inputmode="numeric"
             pattern="[0-9]{9}"
             minlength="9"
@@ -174,7 +173,7 @@
             required
           />
           <p class="field-help">
-            Demo only: <code>123456789</code>
+            Provided privately by the Shape admin.
           </p>
 
           <div class="divider"></div>
@@ -182,7 +181,8 @@
           <div class="step">
             <h3><span>3</span> Migrate account</h3>
             <p>
-              The API key is used for this request only and is never stored.
+              The migration key is used for this request only and is never
+              stored.
             </p>
             <button class="button primary" type="submit">
               {migrating ? "Migrating…" : "Migrate"}

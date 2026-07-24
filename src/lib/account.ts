@@ -1,4 +1,4 @@
-export const DEMO_API_KEY = "123456789";
+export const DEFAULT_MIGRATION_KEY = "123456789";
 export const DEMO_ACCOUNT_CODE = "shapedemo-account";
 export const DEMO_ACCOUNT_INPUT =
   "https://shape.example/migrate?code=shapedemo-account";

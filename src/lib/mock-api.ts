@@ -1,8 +1,8 @@
 import {
   createMockAccount,
-  DEMO_API_KEY,
   type ShapeAccount,
 } from "./account";
+import { isCurrentMigrationKey } from "./server/migration-key-store";
 
 export interface MockApiResult {
   status: number;
@@ -16,14 +16,15 @@ export function getMockAccount(
   if (!/^Bearer \d{9}$/.test(authorization ?? "")) {
     return {
       status: 401,
-      body: { error: "Shape API key must be exactly 9 digits" },
+      body: { error: "Migration key must be exactly 9 digits" },
     };
   }
 
-  if (authorization !== `Bearer ${DEMO_API_KEY}`) {
+  const migrationKey = authorization!.slice("Bearer ".length);
+  if (!isCurrentMigrationKey(migrationKey)) {
     return {
       status: 401,
-      body: { error: "Invalid Shape API key" },
+      body: { error: "Invalid migration key" },
     };
   }
 

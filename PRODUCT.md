@@ -13,10 +13,11 @@ handoff workflow rather than as an ongoing dashboard.
 ## Product Purpose
 
 Shaperotator logs the user into TinyCloud, accepts a Shape account code or URL
-and a 9-digit API key, fetches the corresponding account JSON, and writes the
-record to TinyCloud KV through one explicit migration action. The demo API
-returns deterministic account data seeded by the Shape account ID so
-demonstrations and tests are repeatable.
+and an admin-issued 9-digit migration key, fetches the corresponding account
+JSON, and writes the record to TinyCloud KV through one explicit migration
+action. The admin shares the key with the user out of band. The demo API returns
+deterministic account data seeded by the Shape account ID so demonstrations and
+tests are repeatable.
 
 ## Brand Personality
 

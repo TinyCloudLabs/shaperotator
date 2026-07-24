@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Engineering handoff for the Shaperotator Shape-to-TinyCloud migration demo."
+    />
+    <title>Shaperotator Engineering Handoff</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #ffffff;
+        --surface: #f8f7f6;
+        --surface-strong: #f0eeec;
+        --ink: #1d1816;
+        --muted: #625955;
+        --border: #ded9d6;
+        --primary: #d9471e;
+        --primary-dark: #a72d0d;
+        --blue: #174b8f;
+        --green: #17633c;
+        --amber: #805600;
+        --red: #a32323;
+        --code-bg: #171b22;
+        --code-ink: #edf2f7;
+        --max-width: 1120px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--bg);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      a {
+        color: var(--blue);
+        text-underline-offset: 0.16em;
+      }
+
+      a:hover {
+        color: var(--primary-dark);
+      }
+
+      code,
+      pre {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      code {
+        padding: 0.12rem 0.34rem;
+        border-radius: 5px;
+        color: #123c74;
+        background: #f0f4f9;
+        font-size: 0.9em;
+      }
+
+      pre {
+        margin: 0.8rem 0 1.4rem;
+        padding: 1rem 1.1rem;
+        overflow-x: auto;
+        border-radius: 10px;
+        color: var(--code-ink);
+        background: var(--code-bg);
+        font-size: 0.84rem;
+        line-height: 1.65;
+      }
+
+      pre code {
+        padding: 0;
+        color: inherit;
+        background: transparent;
+        font-size: inherit;
+      }
+
+      .topbar {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .topbar-inner {
+        display: flex;
+        width: min(var(--max-width), calc(100% - 40px));
+        min-height: 62px;
+        margin: 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 760;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 7px;
+        color: white;
+        background: var(--primary);
+        font-size: 0.82rem;
+      }
+
+      .topbar a {
+        color: var(--ink);
+        font-size: 0.85rem;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      .hero {
+        width: min(var(--max-width), calc(100% - 40px));
+        margin: 0 auto;
+        padding: 64px 0 48px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+        gap: 52px;
+        align-items: end;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+        text-wrap: balance;
+      }
+
+      h1 {
+        max-width: 18ch;
+        margin: 0 0 16px;
+        font-size: clamp(2.25rem, 5vw, 4rem);
+        letter-spacing: -0.035em;
+      }
+
+      .lede {
+        max-width: 68ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.08rem;
+      }
+
+      .meta {
+        display: grid;
+        gap: 9px;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        font-size: 0.82rem;
+      }
+
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .meta-row span:first-child {
+        color: var(--muted);
+      }
+
+      .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        color: var(--green);
+        background: #edf8f1;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .pill::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        content: "";
+      }
+
+      .layout {
+        display: grid;
+        width: min(var(--max-width), calc(100% - 40px));
+        margin: 0 auto 80px;
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 56px;
+      }
+
+      nav {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        padding: 16px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      nav strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.78rem;
+      }
+
+      nav a {
+        display: block;
+        padding: 4px 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-decoration: none;
+      }
+
+      nav a:hover {
+        color: var(--primary-dark);
+      }
+
+      article {
+        min-width: 0;
+      }
+
+      section {
+        padding: 40px 0;
+        border-top: 1px solid var(--border);
+      }
+
+      section:first-child {
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      h2 {
+        margin: 0 0 18px;
+        font-size: 1.65rem;
+        letter-spacing: -0.018em;
+      }
+
+      h3 {
+        margin: 28px 0 10px;
+        font-size: 1rem;
+      }
+
+      p {
+        max-width: 74ch;
+        margin: 0 0 16px;
+      }
+
+      ul,
+      ol {
+        max-width: 76ch;
+        padding-left: 1.3rem;
+      }
+
+      li {
+        margin: 0.35rem 0;
+      }
+
+      .callout {
+        margin: 20px 0;
+        padding: 16px 18px;
+        border: 1px solid #e1c985;
+        border-radius: 10px;
+        color: #59400a;
+        background: #fff9e8;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .architecture {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, auto));
+        gap: 12px;
+        align-items: center;
+        margin: 24px 0;
+      }
+
+      .node {
+        min-height: 112px;
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .node.admin {
+        border-color: #d6c18c;
+        background: #fffaf0;
+      }
+
+      .node.user {
+        border-color: #b7cbe3;
+        background: #f4f8fd;
+      }
+
+      .node.storage {
+        border-color: #acd2bd;
+        background: #f1faf5;
+      }
+
+      .node strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.84rem;
+      }
+
+      .node span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.75rem;
+        line-height: 1.45;
+      }
+
+      .arrow {
+        color: var(--muted);
+        font-size: 1.25rem;
+        text-align: center;
+      }
+
+      .split-flow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .flow {
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+
+      .flow h3 {
+        margin-top: 0;
+      }
+
+      .flow ol {
+        margin-bottom: 0;
+        padding-left: 1.15rem;
+        font-size: 0.88rem;
+      }
+
+      table {
+        width: 100%;
+        margin: 18px 0 26px;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+      }
+
+      th,
+      td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        background: var(--surface);
+        font-size: 0.74rem;
+      }
+
+      td:first-child,
+      th:first-child {
+        width: 28%;
+      }
+
+      .endpoint {
+        margin: 22px 0;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+
+      .endpoint-header {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 12px;
+      }
+
+      .method {
+        padding: 3px 7px;
+        border-radius: 5px;
+        color: white;
+        background: var(--blue);
+        font-size: 0.68rem;
+        font-weight: 800;
+      }
+
+      .endpoint-header code {
+        color: var(--ink);
+        background: transparent;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        position: relative;
+        margin: 0;
+        padding: 13px 15px 13px 42px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+      }
+
+      .checklist li::before {
+        position: absolute;
+        top: 14px;
+        left: 15px;
+        color: var(--primary-dark);
+        font-weight: 800;
+        content: "→";
+      }
+
+      footer {
+        padding: 32px 20px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        background: var(--surface);
+        font-size: 0.78rem;
+        text-align: center;
+      }
+
+      @media (max-width: 860px) {
+        .hero-grid,
+        .layout,
+        .split-flow {
+          grid-template-columns: 1fr;
+        }
+
+        .layout {
+          gap: 18px;
+        }
+
+        nav {
+          position: static;
+          columns: 2;
+        }
+
+        nav strong {
+          column-span: all;
+        }
+
+        .architecture {
+          grid-template-columns: 1fr;
+        }
+
+        .arrow {
+          transform: rotate(90deg);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .topbar-inner,
+        .hero,
+        .layout {
+          width: min(100% - 28px, var(--max-width));
+        }
+
+        .topbar a {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 42px;
+        }
+
+        h1 {
+          font-size: 2.35rem;
+        }
+
+        nav {
+          columns: 1;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+
+      @media print {
+        .topbar,
+        nav {
+          display: none;
+        }
+
+        .hero,
+        .layout {
+          width: 100%;
+        }
+
+        .layout {
+          display: block;
+        }
+
+        section {
+          break-inside: avoid;
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span>Shaperotator</span>
+        </div>
+        <a href="https://github.com/TinyCloudLabs/shaperotator/pull/1"
+          >TinyCloudLabs/shaperotator · PR #1</a
+        >
+      </div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="hero-grid">
+          <div>
+            <h1>Engineering handoff</h1>
+            <p class="lede">
+              Shaperotator is a focused migration demo that retrieves seeded
+              Shape account data with an admin-issued key and stores the record
+              in a user-owned TinyCloud KV space.
+            </p>
+            <div class="status-row" aria-label="Verification status">
+              <span class="pill">15 tests passing</span>
+              <span class="pill">Type check clean</span>
+              <span class="pill">Cloudflare build passing</span>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="meta-row">
+              <span>Repository</span>
+              <strong>TinyCloudLabs/shaperotator</strong>
+            </div>
+            <div class="meta-row">
+              <span>Branch</span>
+              <strong>feat/initial-shaperotator-app</strong>
+            </div>
+            <div class="meta-row">
+              <span>Runtime</span>
+              <strong>SvelteKit + Bun</strong>
+            </div>
+            <div class="meta-row">
+              <span>Storage</span>
+              <strong>TinyCloud KV</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <nav aria-label="Document sections">
+          <strong>Contents</strong>
+          <a href="#overview">Overview</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#flows">Admin and user flows</a>
+          <a href="#run">Run locally</a>
+          <a href="#endpoints">Endpoint contracts</a>
+          <a href="#tinycloud">TinyCloud integration</a>
+          <a href="#security">Security boundaries</a>
+          <a href="#files">File map</a>
+          <a href="#verification">Verification</a>
+          <a href="#production">Production checklist</a>
+        </nav>
+
+        <article>
+          <section id="overview">
+            <h2>Overview</h2>
+            <p>
+              The application handles a single task: migrate one Shape account
+              record into the signed-in user's TinyCloud storage. The Shape
+              service is mocked; OpenKey authentication and TinyCloud KV writes
+              use the real client SDKs.
+            </p>
+            <p>
+              An administrator creates or replaces a 9-digit migration key
+              through a protected endpoint and shares it with the user outside
+              the app. The user logs into TinyCloud first, supplies an account
+              code or URL and the migration key, then selects
+              <strong>Migrate</strong>.
+            </p>
+            <div class="callout">
+              <strong>Intentional dummy-server boundary</strong>
+              The active migration key is held in process memory. It resets to
+              <code>123456789</code> on server restart and is not suitable for
+              multi-instance production deployment.
+            </div>
+          </section>
+
+          <section id="architecture">
+            <h2>Architecture</h2>
+            <div
+              class="architecture"
+              role="img"
+              aria-label="Admin rotates an in-memory migration key. A user presents that key to the account endpoint. The UI then writes the account to TinyCloud KV."
+            >
+              <div class="node admin">
+                <strong>Shape admin</strong>
+                <span>Generates or sets a 9-digit key using a separate admin token.</span>
+              </div>
+              <div class="arrow" aria-hidden="true">→</div>
+              <div class="node">
+                <strong>Dummy API</strong>
+                <span>Maintains the active key and creates seeded account JSON.</span>
+              </div>
+              <div class="arrow" aria-hidden="true">→</div>
+              <div class="node user">
+                <strong>Migration UI</strong>
+                <span>Logs into TinyCloud, fetches the account, and submits the write.</span>
+              </div>
+            </div>
+            <div class="architecture" aria-hidden="true">
+              <div class="node admin">
+                <strong>Admin endpoint</strong>
+                <span>POST /api/admin/migration-key</span>
+              </div>
+              <div class="arrow">↘</div>
+              <div class="node">
+                <strong>In-memory state</strong>
+                <span>Exactly one active migration key per process.</span>
+              </div>
+              <div class="arrow">↘</div>
+              <div class="node storage">
+                <strong>TinyCloud KV</strong>
+                <span>shaperotator/accounts/&lt;accountId&gt;</span>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>SvelteKit UI</td>
+                  <td>
+                    Enforces login-first ordering, accepts codes or URLs, and
+                    runs fetch plus TinyCloud write through one migration action.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Admin endpoint</td>
+                  <td>
+                    Authenticates the admin bearer token, generates or sets a
+                    9-digit migration key, and returns it to the admin.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Account endpoint</td>
+                  <td>
+                    Validates the current migration key, resolves the account
+                    code, and returns deterministic mock account JSON.
+                  </td>
+                </tr>
+                <tr>
+                  <td>OpenKey</td>
+                  <td>
+                    Connects the user's wallet and supplies the provider used to
+                    sign into TinyCloud.
+                  </td>
+                </tr>
+                <tr>
+                  <td>TinyCloud web SDK</td>
+                  <td>
+                    Signs in with the narrow manifest and writes the migration
+                    envelope to the user's KV space.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="flows">
+            <h2>Admin and user flows</h2>
+            <div class="split-flow">
+              <div class="flow">
+                <h3>Admin</h3>
+                <ol>
+                  <li>Authenticate with the separate admin bearer token.</li>
+                  <li>POST without a body to generate a random 9-digit key, or provide a specific key.</li>
+                  <li>Receive the active key in the JSON response.</li>
+                  <li>Give the key to the intended user out of band.</li>
+                </ol>
+              </div>
+              <div class="flow">
+                <h3>User</h3>
+                <ol>
+                  <li>Open the migration app and log into TinyCloud.</li>
+                  <li>Enter an account code, paste an account URL, or arrive through <code>?code=…</code>.</li>
+                  <li>Enter the 9-digit migration key received from the admin.</li>
+                  <li>Select <strong>Migrate</strong>; the app fetches and writes the account.</li>
+                </ol>
+              </div>
+            </div>
+            <p>
+              Rotation is immediate: once the admin activates a new key, the
+              previous key receives <code>401 Invalid migration key</code>.
+            </p>
+          </section>
+
+          <section id="run">
+            <h2>Run locally</h2>
+            <h3>Requirements</h3>
+            <ul>
+              <li>Bun 1.3 or newer</li>
+              <li>A browser capable of completing OpenKey authentication</li>
+              <li>A TinyCloud node at <code>http://127.0.0.1:8000</code>, or a configured remote host</li>
+            </ul>
+
+            <h3>Start the app and dummy API</h3>
+            <pre><code>bun install
+bun run dev -- --host 127.0.0.1</code></pre>
+            <p>
+              Open
+              <a href="http://127.0.0.1:5173/?code=shapedemo-account"
+                >http://127.0.0.1:5173/?code=shapedemo-account</a
+              >.
+            </p>
+
+            <h3>Local bootstrap values</h3>
+            <table>
+              <tbody>
+                <tr>
+                  <th>Account code</th>
+                  <td><code>shapedemo-account</code></td>
+                </tr>
+                <tr>
+                  <th>Account URL</th>
+                  <td><code>https://shape.example/migrate?code=shapedemo-account</code></td>
+                </tr>
+                <tr>
+                  <th>Initial migration key</th>
+                  <td><code>123456789</code> after each server restart</td>
+                </tr>
+                <tr>
+                  <th>Development admin token</th>
+                  <td><code>shapedemo_admin_token</code></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Environment</h3>
+            <pre><code>VITE_TINYCLOUD_HOST=http://127.0.0.1:8000
+SHAPE_DEMO_ADMIN_TOKEN=replace-with-a-private-admin-token</code></pre>
+            <p>
+              The development admin-token fallback is disabled in production.
+              A non-development deployment must set
+              <code>SHAPE_DEMO_ADMIN_TOKEN</code>.
+            </p>
+          </section>
+
+          <section id="endpoints">
+            <h2>Endpoint contracts</h2>
+
+            <div class="endpoint">
+              <div class="endpoint-header">
+                <span class="method">POST</span>
+                <code>/api/admin/migration-key</code>
+              </div>
+              <p>
+                Generates or replaces the active user migration key. Requires
+                <code>Authorization: Bearer &lt;admin-token&gt;</code>.
+              </p>
+              <h3>Generate a random key</h3>
+              <pre><code>curl -X POST \
+  -H 'authorization: Bearer shapedemo_admin_token' \
+  http://127.0.0.1:5173/api/admin/migration-key</code></pre>
+              <h3>Set a specific key</h3>
+              <pre><code>curl -X POST \
+  -H 'authorization: Bearer shapedemo_admin_token' \
+  -H 'content-type: application/json' \
+  -d '{"migrationKey":"987654321"}' \
+  http://127.0.0.1:5173/api/admin/migration-key</code></pre>
+              <h3>Success response</h3>
+              <pre><code>{
+  "migrationKey": "987654321",
+  "updatedAt": "2026-07-24T20:03:01.308Z",
+  "operation": "updated"
+}</code></pre>
+              <p>
+                Expected errors: <code>400</code> for invalid JSON or a
+                non-9-digit key, <code>401</code> for an invalid admin token,
+                and <code>503</code> when production admin auth is unconfigured.
+              </p>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-header">
+                <span class="method">POST</span>
+                <code>/api/account</code>
+              </div>
+              <p>
+                Fetches one deterministic mock account. Requires
+                <code>Authorization: Bearer &lt;9-digit-migration-key&gt;</code>.
+              </p>
+              <pre><code>curl -X POST \
+  -H 'authorization: Bearer 987654321' \
+  -H 'content-type: application/json' \
+  -d '{"accountCode":"shapedemo-account"}' \
+  http://127.0.0.1:5173/api/account</code></pre>
+              <p>
+                <code>accountCode</code> accepts a direct code, a URL with
+                <code>?code=</code>, a URL with <code>?accountId=</code>, or a
+                URL whose final path segment is the account identifier.
+              </p>
+              <p>
+                Expected errors: <code>400</code> for a missing or invalid
+                account code and <code>401</code> for malformed, expired, or
+                incorrect migration keys.
+              </p>
+            </div>
+          </section>
+
+          <section id="tinycloud">
+            <h2>TinyCloud integration</h2>
+            <p>
+              The app follows the OpenKey and TinyCloud patterns used by
+              TinyCloud's Secret Manager. The TinyCloud SDK is loaded only when
+              the user selects login, keeping the initial UI bundle small.
+            </p>
+
+            <h3>Manifest scope</h3>
+            <pre><code>{
+  "service": "tinycloud.kv",
+  "space": "shaperotator",
+  "path": "accounts/",
+  "actions": ["put"],
+  "skipPrefix": true
+}</code></pre>
+
+            <h3>KV location</h3>
+            <pre><code>space: shaperotator
+key:   accounts/&lt;accountId&gt;</code></pre>
+
+            <h3>Stored envelope</h3>
+            <pre><code>{
+  "account": { "...mock Shape account fields..." },
+  "importedAt": "ISO-8601 timestamp",
+  "importer": "xyz.tinycloud.shaperotator"
+}</code></pre>
+            <p>
+              Neither the migration key nor the admin token is included in the
+              TinyCloud record.
+            </p>
+          </section>
+
+          <section id="security">
+            <h2>Security and trust boundaries</h2>
+            <ul>
+              <li>
+                <strong>Separate credentials:</strong> the admin bearer token
+                controls key rotation; the 9-digit migration key only authorizes
+                account retrieval.
+              </li>
+              <li>
+                <strong>Server-only state:</strong> the active key and admin
+                endpoint logic live under <code>src/lib/server/</code>.
+              </li>
+              <li>
+                <strong>No credential persistence:</strong> the browser uses the
+                migration key for one request and does not write it to TinyCloud.
+              </li>
+              <li>
+                <strong>Narrow TinyCloud capability:</strong> the app requests
+                only <code>tinycloud.kv/put</code> under
+                <code>accounts/</code>.
+              </li>
+              <li>
+                <strong>No-cache admin response:</strong> the key-management
+                endpoint returns <code>Cache-Control: no-store</code>.
+              </li>
+            </ul>
+
+            <div class="callout">
+              <strong>Not production authentication</strong>
+              A 9-digit shared secret has a small keyspace and the dummy API has
+              no rate limiting, expiry, per-account binding, audit log, or
+              replay protection. Replace this scheme before handling real
+              customer data.
+            </div>
+          </section>
+
+          <section id="files">
+            <h2>Implementation file map</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/routes/+page.svelte</code></td>
+                  <td>Login-first migration UI and fetch-to-write orchestration.</td>
+                </tr>
+                <tr>
+                  <td><code>src/routes/api/account/+server.ts</code></td>
+                  <td>User-facing account retrieval endpoint.</td>
+                </tr>
+                <tr>
+                  <td><code>src/routes/api/admin/migration-key/+server.ts</code></td>
+                  <td>Separate admin key-generation and update endpoint.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/server/migration-key-store.ts</code></td>
+                  <td>In-memory key state, validation, generation, and reset helper.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/server/admin-api.ts</code></td>
+                  <td>Admin authorization and endpoint-domain behavior.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/mock-api.ts</code></td>
+                  <td>Migration-key validation and mock-account response logic.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/account.ts</code></td>
+                  <td>Code/URL parsing and deterministic seeded account generator.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/tinycloud.ts</code></td>
+                  <td>OpenKey login, TinyCloud initialization, and KV write.</td>
+                </tr>
+                <tr>
+                  <td><code>src/lib/tinycloud-manifest.ts</code></td>
+                  <td>Narrow TinyCloud permission declaration.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="verification">
+            <h2>Verification</h2>
+            <pre><code>bun test
+bun run check
+bun run build</code></pre>
+            <table>
+              <thead>
+                <tr>
+                  <th>Check</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Unit tests</td>
+                  <td>15 passing across account parsing, seeded data, key rotation, admin authorization, and manifest scope.</td>
+                </tr>
+                <tr>
+                  <td>Svelte diagnostics</td>
+                  <td>0 errors and 0 warnings.</td>
+                </tr>
+                <tr>
+                  <td>Cloudflare production build</td>
+                  <td>Passing.</td>
+                </tr>
+                <tr>
+                  <td>Live endpoint integration</td>
+                  <td>Admin generation succeeded; new key fetched <code>shapedemo-account</code>; old key was rejected.</td>
+                </tr>
+                <tr>
+                  <td>Browser inspection</td>
+                  <td>Desktop and narrow layouts inspected; <code>?code=</code> prefill verified.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="production">
+            <h2>Productionization checklist</h2>
+            <ul class="checklist">
+              <li>
+                Replace the in-memory store with durable, atomic storage such as
+                Cloudflare KV, D1, or the Shape service's database.
+              </li>
+              <li>
+                Replace the 9-digit shared secret with high-entropy, expiring,
+                single-use, account-bound migration grants.
+              </li>
+              <li>
+                Add rate limiting, failed-attempt throttling, audit events, and
+                explicit revocation.
+              </li>
+              <li>
+                Replace <code>createMockAccount()</code> with the real Shape API
+                adapter while preserving the <code>ShapeAccount</code> contract.
+              </li>
+              <li>
+                Configure <code>SHAPE_DEMO_ADMIN_TOKEN</code> in the deployment
+                secret store and remove the development fallback from any public
+                staging environment.
+              </li>
+              <li>
+                Add an authenticated administrator UI only if operational users
+                need one; the current requirement is intentionally endpoint-only.
+              </li>
+              <li>
+                Run a real interactive OpenKey login and TinyCloud write against
+                the target environment before release.
+              </li>
+            </ul>
+          </section>
+        </article>
+      </div>
+    </main>
+
+    <footer>
+      Shaperotator engineering handoff · TinyCloud Labs · July 2026
+    </footer>
+  </body>
+</html>

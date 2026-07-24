@@ -1,6 +1,7 @@
-export const DEMO_API_KEY = "shapedemo_api_key";
-export const DEMO_ACCOUNT_URL =
-  "https://shape.example/accounts/shapedemo-account";
+export const DEMO_API_KEY = "123456789";
+export const DEMO_ACCOUNT_CODE = "shapedemo-account";
+export const DEMO_ACCOUNT_INPUT =
+  "https://shape.example/migrate?code=shapedemo-account";
 
 export interface ShapeAccount {
   accountId: string;
@@ -24,17 +25,34 @@ export interface ShapeAccount {
   };
   source: {
     provider: "shape";
-    accountUrl: string;
+    accountReference: string;
     mock: true;
   };
 }
 
-export function parseAccountId(accountUrl: string): string {
+function validateAccountCode(value: string): string {
+  const accountCode = value.trim();
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{2,63}$/.test(accountCode)) {
+    throw new Error("Enter a valid Shape account code or URL");
+  }
+  return accountCode;
+}
+
+export function parseAccountCode(accountReference: string): string {
+  const value = accountReference.trim();
+  if (!value) {
+    throw new Error("Enter a Shape account code or URL");
+  }
+
+  if (!value.includes("://")) {
+    return validateAccountCode(value);
+  }
+
   let url: URL;
   try {
-    url = new URL(accountUrl.trim());
+    url = new URL(value);
   } catch {
-    throw new Error("Enter a valid Shape account URL");
+    throw new Error("Enter a valid Shape account code or URL");
   }
 
   if (url.protocol !== "https:" && url.protocol !== "http:") {
@@ -42,12 +60,12 @@ export function parseAccountId(accountUrl: string): string {
   }
 
   const segments = url.pathname.split("/").filter(Boolean);
-  const accountId = segments.at(-1)?.trim() ?? "";
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{2,63}$/.test(accountId)) {
-    throw new Error("Shape account URL does not contain a valid account ID");
-  }
-
-  return accountId;
+  return validateAccountCode(
+    url.searchParams.get("code") ??
+      url.searchParams.get("accountId") ??
+      segments.at(-1) ??
+      "",
+  );
 }
 
 function hashSeed(value: string): number {
@@ -73,8 +91,8 @@ function pick<T>(values: readonly T[], random: () => number): T {
   return values[Math.floor(random() * values.length)]!;
 }
 
-export function createMockAccount(accountUrl: string): ShapeAccount {
-  const accountId = parseAccountId(accountUrl);
+export function createMockAccount(accountReference: string): ShapeAccount {
+  const accountId = parseAccountCode(accountReference);
   const random = seededRandom(hashSeed(accountId));
   const firstName = pick(
     ["Avery", "Jordan", "Morgan", "Riley", "Taylor", "Sasha"],
@@ -114,7 +132,7 @@ export function createMockAccount(accountUrl: string): ShapeAccount {
     },
     source: {
       provider: "shape",
-      accountUrl: new URL(accountUrl.trim()).toString(),
+      accountReference: accountReference.trim(),
       mock: true,
     },
   };

@@ -1,59 +1,26 @@
 <script lang="ts">
   import {
-    DEMO_ACCOUNT_URL,
+    DEMO_ACCOUNT_INPUT,
     DEMO_API_KEY,
     type ShapeAccount,
   } from "$lib/account";
+  import { onMount } from "svelte";
 
   type StatusTone = "idle" | "working" | "success" | "error";
 
-  let accountUrl = $state(DEMO_ACCOUNT_URL);
+  let accountReference = $state(DEMO_ACCOUNT_INPUT);
   let apiKey = $state(DEMO_API_KEY);
   let account = $state<ShapeAccount | null>(null);
   let connectedAddress = $state("");
   let statusTone = $state<StatusTone>("idle");
-  let statusMessage = $state(
-    "Fetch the mock record, inspect it, then import it.",
-  );
-  let fetching = $state(false);
+  let statusMessage = $state("Log in to TinyCloud to begin.");
   let connecting = $state(false);
-  let importing = $state(false);
+  let migrating = $state(false);
 
-  async function fetchAccount() {
-    fetching = true;
-    account = null;
-    statusTone = "working";
-    statusMessage = "Checking the Shape account link…";
-
-    try {
-      const response = await fetch("/api/account", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({ accountUrl }),
-      });
-      const payload = (await response.json()) as {
-        account?: ShapeAccount;
-        error?: string;
-      };
-
-      if (!response.ok || !payload.account) {
-        throw new Error(payload.error || "Shape account lookup failed");
-      }
-
-      account = payload.account;
-      statusTone = "success";
-      statusMessage = `Fetched mock data for ${payload.account.accountId}.`;
-    } catch (error) {
-      statusTone = "error";
-      statusMessage =
-        error instanceof Error ? error.message : "Shape account lookup failed";
-    } finally {
-      fetching = false;
-    }
-  }
+  onMount(() => {
+    const codeFromUrl = new URL(window.location.href).searchParams.get("code");
+    if (codeFromUrl) accountReference = codeFromUrl;
+  });
 
   async function connect() {
     connecting = true;
@@ -65,7 +32,7 @@
       const auth = await connectTinyCloud();
       connectedAddress = auth.address;
       statusTone = "success";
-      statusMessage = "TinyCloud is connected. The account is ready to import.";
+      statusMessage = "TinyCloud is connected. Enter the migration details.";
     } catch (error) {
       statusTone = "error";
       statusMessage =
@@ -75,30 +42,50 @@
     }
   }
 
-  async function storeAccount() {
-    if (!account) return;
+  async function migrateAccount() {
+    if (!connectedAddress) return;
 
-    importing = true;
+    migrating = true;
+    account = null;
     statusTone = "working";
-    statusMessage = `Writing accounts/${account.accountId}…`;
+    statusMessage = "Retrieving the Shape account…";
 
     try {
+      const response = await fetch("/api/account", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ accountCode: accountReference }),
+      });
+      const payload = (await response.json()) as {
+        account?: ShapeAccount;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.account) {
+        throw new Error(payload.error || "Shape account lookup failed");
+      }
+
+      account = payload.account;
+      statusMessage = `Writing accounts/${payload.account.accountId}…`;
       const { importAccount } = await import("$lib/tinycloud");
-      const key = await importAccount(account);
+      const key = await importAccount(payload.account);
       statusTone = "success";
-      statusMessage = `Imported successfully to ${key}.`;
+      statusMessage = `Migration complete. Stored at ${key}.`;
     } catch (error) {
       statusTone = "error";
       statusMessage =
-        error instanceof Error ? error.message : "TinyCloud import failed";
+        error instanceof Error ? error.message : "Account migration failed";
     } finally {
-      importing = false;
+      migrating = false;
     }
   }
 </script>
 
 <svelte:head>
-  <title>Import account · Shaperotator</title>
+  <title>Migrate account · Shaperotator</title>
 </svelte:head>
 
 <header class="app-header">
@@ -112,10 +99,10 @@
 <main>
   <section class="intro" aria-labelledby="page-title">
     <div>
-      <h1 id="page-title">Import a Shape account</h1>
+      <h1 id="page-title">Migrate a Shape account</h1>
       <p>
-        Fetch one deterministic demo record, verify the JSON, and store it in
-        your TinyCloud space.
+        Log in, provide the Shape account code and API key, then migrate the
+        account into your TinyCloud space.
       </p>
     </div>
     <div class="destination">
@@ -128,61 +115,23 @@
     <section class="workflow" aria-labelledby="workflow-title">
       <h2 id="workflow-title" class="sr-only">Import workflow</h2>
 
-      <form onsubmit={(event) => { event.preventDefault(); fetchAccount(); }}>
-        <fieldset disabled={fetching}>
-          <legend><span>1</span> Fetch account data</legend>
-
-          <label for="account-url">Shape account link</label>
-          <input
-            id="account-url"
-            name="account-url"
-            type="url"
-            bind:value={accountUrl}
-            autocomplete="url"
-            required
-          />
-          <p class="field-help">
-            The final URL segment becomes the deterministic mock seed.
-          </p>
-
-          <label for="api-key">Shape API key</label>
-          <input
-            id="api-key"
-            name="api-key"
-            type="password"
-            bind:value={apiKey}
-            autocomplete="off"
-            required
-          />
-          <p class="field-help">
-            Demo only: <code>shapedemo_api_key</code>
-          </p>
-
-          <button class="button primary" type="submit">
-            {fetching ? "Fetching…" : "Fetch account"}
-          </button>
-        </fieldset>
-      </form>
-
-      <div class="divider"></div>
-
       <div class="step">
-        <h3><span>2</span> Connect TinyCloud</h3>
+        <h3><span>1</span> Log in to TinyCloud</h3>
         <p>
           Authorize access to the <code>accounts/</code> prefix in your
           Shaperotator space.
         </p>
         <button
-          class="button secondary"
+          class="button primary"
           type="button"
           onclick={connect}
           disabled={connecting || Boolean(connectedAddress)}
         >
           {connectedAddress
-            ? "TinyCloud connected"
+            ? "Logged in to TinyCloud"
             : connecting
-              ? "Connecting…"
-              : "Connect TinyCloud"}
+              ? "Logging in…"
+              : "Log in to TinyCloud"}
         </button>
         {#if connectedAddress}
           <p class="connected-address" title={connectedAddress}>
@@ -193,25 +142,61 @@
 
       <div class="divider"></div>
 
-      <div class="step">
-        <h3><span>3</span> Import record</h3>
-        <p>The API key is not stored. Only the previewed record is written.</p>
-        <button
-          class="button primary"
-          type="button"
-          onclick={storeAccount}
-          disabled={!account || !connectedAddress || importing}
-        >
-          {importing ? "Importing…" : "Import to TinyCloud"}
-        </button>
-      </div>
+      <form onsubmit={(event) => { event.preventDefault(); migrateAccount(); }}>
+        <fieldset disabled={!connectedAddress || migrating}>
+          <legend><span>2</span> Enter migration details</legend>
+
+          <label for="account-code">Shape account code or URL</label>
+          <input
+            id="account-code"
+            name="account-code"
+            type="text"
+            bind:value={accountReference}
+            autocomplete="off"
+            required
+          />
+          <p class="field-help">
+            Loaded from this page’s <code>?code=…</code> when present; URLs
+            containing a code also work.
+          </p>
+
+          <label for="api-key">9-digit API key</label>
+          <input
+            id="api-key"
+            name="api-key"
+            type="password"
+            bind:value={apiKey}
+            inputmode="numeric"
+            pattern="[0-9]{9}"
+            minlength="9"
+            maxlength="9"
+            autocomplete="off"
+            required
+          />
+          <p class="field-help">
+            Demo only: <code>123456789</code>
+          </p>
+
+          <div class="divider"></div>
+
+          <div class="step">
+            <h3><span>3</span> Migrate account</h3>
+            <p>
+              The API key is used for this request only and is never stored.
+            </p>
+            <button class="button primary" type="submit">
+              {migrating ? "Migrating…" : "Migrate"}
+            </button>
+          </div>
+        </fieldset>
+      </form>
     </section>
 
     <section class="preview" aria-labelledby="preview-title">
       <div class="preview-heading">
         <div>
-          <h2 id="preview-title">Account JSON</h2>
-          <p>Exact payload nested inside the TinyCloud import envelope.</p>
+          <h2 id="preview-title">Migrated account JSON</h2>
+          <p>The account payload written inside the TinyCloud import envelope.</p>
         </div>
         {#if account}
           <span class="mock-badge">Mock data</span>
@@ -223,8 +208,8 @@
       {:else}
         <div class="empty-state">
           <span aria-hidden="true">{"{ }"}</span>
-          <p>No account fetched yet.</p>
-          <small>Use the seeded demo values to generate a preview.</small>
+          <p>No account migrated yet.</p>
+          <small>Log in and complete the migration form to see the record.</small>
         </div>
       {/if}
     </section>

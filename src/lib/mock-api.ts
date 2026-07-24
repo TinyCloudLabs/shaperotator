@@ -11,8 +11,15 @@ export interface MockApiResult {
 
 export function getMockAccount(
   authorization: string | null,
-  accountUrl: unknown,
+  accountCode: unknown,
 ): MockApiResult {
+  if (!/^Bearer \d{9}$/.test(authorization ?? "")) {
+    return {
+      status: 401,
+      body: { error: "Shape API key must be exactly 9 digits" },
+    };
+  }
+
   if (authorization !== `Bearer ${DEMO_API_KEY}`) {
     return {
       status: 401,
@@ -20,24 +27,26 @@ export function getMockAccount(
     };
   }
 
-  if (typeof accountUrl !== "string") {
+  if (typeof accountCode !== "string") {
     return {
       status: 400,
-      body: { error: "accountUrl is required" },
+      body: { error: "accountCode is required" },
     };
   }
 
   try {
     return {
       status: 200,
-      body: { account: createMockAccount(accountUrl) },
+      body: { account: createMockAccount(accountCode) },
     };
   } catch (error) {
     return {
       status: 400,
       body: {
         error:
-          error instanceof Error ? error.message : "Invalid Shape account URL",
+          error instanceof Error
+            ? error.message
+            : "Invalid Shape account code or URL",
       },
     };
   }

@@ -12,10 +12,11 @@ handoff workflow rather than as an ongoing dashboard.
 
 ## Product Purpose
 
-Shaperotator accepts a Shape account link and API key, fetches the corresponding
-account JSON, lets the user inspect it, and writes the record to TinyCloud KV.
-The demo API returns deterministic account data seeded by the Shape account ID
-so demonstrations and tests are repeatable.
+Shaperotator logs the user into TinyCloud, accepts a Shape account code or URL
+and a 9-digit API key, fetches the corresponding account JSON, and writes the
+record to TinyCloud KV through one explicit migration action. The demo API
+returns deterministic account data seeded by the Shape account ID so
+demonstrations and tests are repeatable.
 
 ## Brand Personality
 
@@ -32,7 +33,7 @@ workflow or imply production readiness for the mocked Shape API.
 
 - Keep the complete workflow visible and understandable on one screen.
 - Make data provenance and the final TinyCloud KV destination explicit.
-- Preview before writing so the user can verify exactly what will be stored.
+- Make the required login state and migration result unmistakable.
 - Distinguish mocked API behavior from real TinyCloud persistence.
 - Prefer standard controls and plain status language over decorative UI.
 

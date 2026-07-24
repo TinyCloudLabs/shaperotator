@@ -10,13 +10,13 @@ export const POST: RequestHandler = async ({ request }) => {
     return json({ error: "Request body must be JSON" }, { status: 400 });
   }
 
-  const accountUrl =
-    typeof payload === "object" && payload !== null && "accountUrl" in payload
-      ? (payload as { accountUrl?: unknown }).accountUrl
+  const accountCode =
+    typeof payload === "object" && payload !== null && "accountCode" in payload
+      ? (payload as { accountCode?: unknown }).accountCode
       : undefined;
   const result = getMockAccount(
     request.headers.get("authorization"),
-    accountUrl,
+    accountCode,
   );
 
   return json(result.body, { status: result.status });

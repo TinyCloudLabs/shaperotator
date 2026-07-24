@@ -2,31 +2,39 @@ import { describe, expect, test } from "bun:test";
 import {
   accountKvKey,
   createMockAccount,
-  DEMO_ACCOUNT_URL,
-  parseAccountId,
+  DEMO_ACCOUNT_CODE,
+  DEMO_ACCOUNT_INPUT,
+  parseAccountCode,
 } from "./account";
 
 describe("Shape account data", () => {
-  test("extracts the account ID from a Shape account URL", () => {
-    expect(parseAccountId(DEMO_ACCOUNT_URL)).toBe("shapedemo-account");
-    expect(parseAccountId("https://shape.example/a/account_123?view=full")).toBe(
-      "account_123",
+  test("accepts a direct Shape account code", () => {
+    expect(parseAccountCode(DEMO_ACCOUNT_CODE)).toBe("shapedemo-account");
+  });
+
+  test("extracts the account code from supported URL shapes", () => {
+    expect(parseAccountCode(DEMO_ACCOUNT_INPUT)).toBe("shapedemo-account");
+    expect(
+      parseAccountCode("https://shape.example/migrate?accountId=account_123"),
+    ).toBe("account_123");
+    expect(parseAccountCode("https://shape.example/accounts/path-account")).toBe(
+      "path-account",
     );
   });
 
-  test("rejects malformed links and account IDs", () => {
-    expect(() => parseAccountId("not a url")).toThrow("valid Shape account URL");
-    expect(() => parseAccountId("https://shape.example/accounts/a")).toThrow(
-      "valid account ID",
+  test("rejects malformed codes and URLs", () => {
+    expect(() => parseAccountCode("a")).toThrow(
+      "valid Shape account code or URL",
+    );
+    expect(() => parseAccountCode("ftp://shape.example/accounts/demo")).toThrow(
+      "HTTP or HTTPS",
     );
   });
 
   test("generates stable pseudo-random JSON from the account ID", () => {
-    const first = createMockAccount(DEMO_ACCOUNT_URL);
-    const second = createMockAccount(DEMO_ACCOUNT_URL);
-    const other = createMockAccount(
-      "https://shape.example/accounts/another-account",
-    );
+    const first = createMockAccount(DEMO_ACCOUNT_INPUT);
+    const second = createMockAccount(DEMO_ACCOUNT_INPUT);
+    const other = createMockAccount("another-account");
 
     expect(first).toEqual(second);
     expect(other).not.toEqual(first);

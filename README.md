@@ -5,17 +5,21 @@ user-owned TinyCloud KV space.
 
 The current Shape API is deliberately mocked:
 
-- account link: `https://shape.example/accounts/shapedemo-account`
-- API key: `shapedemo_api_key`
+- account code: `shapedemo-account`
+- account URL: `https://shape.example/migrate?code=shapedemo-account`
+- 9-digit API key: `123456789`
 - response data: deterministic pseudo-random JSON seeded by the account ID
 
-TinyCloud persistence is real. After previewing the mock response, the user
-connects with OpenKey and writes the record to:
+TinyCloud persistence is real. The user first logs in through OpenKey, enters
+the account code (or pastes a URL containing it) and 9-digit API key, then
+selects **Migrate**. The app fetches the mock record and writes it to:
 
 ```text
 space: shaperotator
 key:   accounts/<accountId>
 ```
+
+Opening the app with `?code=<accountCode>` pre-fills the account code field.
 
 ## Local development
 

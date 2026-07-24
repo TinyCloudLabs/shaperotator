@@ -57,7 +57,7 @@ export async function connectTinyCloud(): Promise<AuthResult> {
 
 export async function importAccount(account: ShapeAccount): Promise<string> {
   if (!tinycloud) {
-    throw new Error("Connect TinyCloud before importing");
+    throw new Error("Log in to TinyCloud before migrating");
   }
 
   const key = accountKvKey(account.accountId);
